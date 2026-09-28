@@ -15,48 +15,20 @@ permissions:
   contents: read
 
 jobs:
-  run-scheduled-tests:
-    name: ${{ matrix.name }}
-    if: github.repository == 'dhis2/dhis2-core'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: tracker-smoke
-            env: |
-              DHIS2_IMAGE=dhis2/core-dev:latest
-              SIMULATION_CLASS=org.hisp.dhis.test.tracker.TrackerTest
-              MVN_ARGS=-Dprofile=smoke
-            slack_webhook_secret: SLACK_WEBHOOK_TRACKER_BACKEND
-          - name: tracker-load
-            env: |
-              DHIS2_IMAGE=dhis2/core-dev:latest
-              SIMULATION_CLASS=org.hisp.dhis.test.tracker.TrackerTest
-              MVN_ARGS=-Dprofile=load
-            slack_webhook_secret: SLACK_WEBHOOK_TRACKER_BACKEND
-          - name: users-smoke
-            env: |
-              DHIS2_IMAGE=dhis2/core-dev:latest
-              SIMULATION_CLASS=org.hisp.dhis.test.platform.UsersPerformanceTest
-              DB_DIR=dev
-              DB_TYPE=platform-perf
-              DB_VERSION=44-2026-06-30
-              WARMUP=2
-              MVN_ARGS="-Diterations=10 -Dprofile=smoke"
-            slack_webhook_secret: SLACK_WEBHOOK_PLATFORM_PERFORMANCE
-          - name: users-load
-            env: |
-              DHIS2_IMAGE=dhis2/core-dev:latest
-              SIMULATION_CLASS=org.hisp.dhis.test.platform.UsersPerformanceTest
-              DB_DIR=dev
-              DB_TYPE=platform-perf
-              DB_VERSION=44-2026-06-30
-              MVN_ARGS=-Diterations=30
-            slack_webhook_secret: SLACK_WEBHOOK_PLATFORM_PERFORMANCE
-    uses: ./.github/workflows/performance-tests.yml
-    with:
-      perf_tests_git_ref: master
-      test_env: ${{ matrix.env }}
-      test_name: ${{ matrix.name }}
-    secrets:
-      slack_webhook: ${{ secrets[matrix.slack_webhook_secret] }}
+  would-run:
+    # Stubbed in this test fork: this workflow's triggers are kept as they were, and its jobs
+    # replaced by this one step, which only records that the workflow fired.
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Record that this workflow would have run
+        env:
+          WORKFLOW: ${{ github.workflow }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+        run: |
+          echo "workflow: $WORKFLOW"
+          echo "event:    $EVENT"
+          echo "ref:      $REF"
+          echo "sha:      $SHA"
