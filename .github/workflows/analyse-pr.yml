@@ -19,33 +19,20 @@ concurrency:
   group: ${{ github.workflow}}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  sonarqube:
-    if: github.actor != 'dependabot[bot]'
+  would-run:
+    # Stubbed in this test fork: this workflow's triggers are kept as they were, and its jobs
+    # replaced by this one step, which only records that the workflow fired.
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          java-version: 17
-          distribution: temurin
-          cache: maven
-
-      - name: Analyse PR
+      - name: Record that this workflow would have run
         env:
-          BASE_BRANCH: ${{ github.base_ref }}
-          BRANCH: ${{ github.ref }}
-          PR: ${{ github.event.number }}
-        if: github.event.pull_request.user.login != 'dependabot[bot]' && github.event_name == 'pull_request'
+          WORKFLOW: ${{ github.workflow }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
         run: |
-          mvn -f dhis-2/pom.xml clean install --threads 2C --batch-mode --update-snapshots --no-transfer-progress -DskipTests
-          mvn -f dhis-2/pom.xml sonar:sonar -Dsonar.internal.analysis.dbd=false --batch-mode --no-transfer-progress -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }} -Dsonar.projectKey=dhis2_dhis2-core
-
-      - name: Analyse long-living branch
-        if: github.event.pull_request.user.login != 'dependabot[bot]' && github.event_name != 'pull_request'
-        run: |
-          mvn -f dhis-2/pom.xml clean install --threads 2C --batch-mode --update-snapshots --no-transfer-progress -DskipTests
-          mvn -f dhis-2/pom.xml sonar:sonar -Dsonar.internal.analysis.dbd=false --batch-mode --no-transfer-progress -Dsonar.branch.name=${GITHUB_REF#refs/heads/} -Dsonar.projectKey=dhis2_dhis2-core
+          echo "workflow: $WORKFLOW"
+          echo "event:    $EVENT"
+          echo "ref:      $REF"
+          echo "sha:      $SHA"
